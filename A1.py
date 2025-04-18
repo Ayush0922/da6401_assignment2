@@ -118,3 +118,34 @@ def prepare_dataloaders(batch_size, img_size):
             DataLoader(train_subset, batch_size=batch_size),
             DataLoader(val_subset, batch_size=batch_size),
             DataLoader(test_set, batch_size=batch_size))
+
+# Config Setup
+cfg = {
+    'input_channel': 3,
+    'output_neuron': 10,
+    'filter_organisation': 'same',
+    'no_of_filters': 8,
+    'filter_size': [3]*5,
+    'stride': [1]*5,
+    'padding': [0]*5,
+    'pool_filter_size': [3]*5,
+    'pool_stride': [1]*5,
+    'pool_padding': [0]*5,
+    'activation': 'ReLU',
+    'dense_layer_size': 16,
+    'batch_size': 64,
+    'img_size': 256,
+}
+
+# Model + Data
+labels, train_dl, val_dl, test_dl = prepare_dataloaders(cfg['batch_size'], cfg['img_size'])
+net = CustomCNN(cfg)
+print(net)
+
+loss_fn = nn.CrossEntropyLoss()
+optimiser = optim.Adam(net.parameters(), lr=1e-4)
+
+# Parameter Count
+param_count = sum(p.numel() for p in net.parameters())
+print(f"Total Parameters: {param_count}")
+
