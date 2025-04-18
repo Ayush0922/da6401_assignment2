@@ -213,3 +213,29 @@ def visualize(model, test_loader, class_names, n_classes=10, samples=3):
     plt.savefig('class_predictions_grid.png', dpi=150, bbox_inches='tight')
     plt.show()
 
+if __name__ == '__main__':
+    train_path = "/kaggle/input/nature-922/inaturalist_12K/train"
+    test_path = "/kaggle/input/nature-922/inaturalist_12K/val"
+
+    best = {
+        'epochs': 10,
+        'batch_size': 32,
+        'learning_rate': 0.0001,
+        'dense_size': 1024,
+        'filter_size': [7, 5, 5, 3, 3],
+        'activation': 'Mish',
+        'filter_organisation': 'alt',
+        'no_of_filters': 32,
+        'data_augmentaion': 'No',
+        'batch_normalization': 'Yes',
+        'dropout': 0.2,
+        'img_size': 224
+    }
+
+    t_dl, v_dl, te_dl, n_cls, cls_names = create_dataloaders(train_path, test_path, best['batch_size'], best['img_size'], best['data_augmentaion'])
+    print("Training...")
+    net = execute_training(best, t_dl, v_dl, n_cls)
+    acc = get_accuracy(net, te_dl)
+    print(f"\nTest Accuracy: {acc:.4f}")
+    print("\nGenerating visualization...")
+    visualize(net, te_dl, cls_names)
