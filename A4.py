@@ -153,3 +153,63 @@ def get_accuracy(model, loader):
             total += y.size(0)
             correct += (pred == y).sum().item()
     return correct / total
+
+# Visualizations
+
+def visualize(model, test_loader, class_names, n_classes=10, samples=3):
+    from matplotlib import pyplot as plt
+    model.eval()
+    sampled = {i: [] for i in range(n_classes)}
+    preds, probs = {i: [] for i in range(n_classes)}, {i: [] for i in range(n_classes)}
+
+    with torch.no_grad():
+        for x, y in test_loader:
+            x, y = x.to(DEVICE), y.to(DEVICE)
+            o = model(x)
+            _, p = torch.max(o, 1)
+            ps = torch.softmax(o, dim=1)
+            for img, gt, pd, prb in zip(x, y, p, ps):
+                idx = gt.item()
+                if len(sampled[idx]) < samples:
+                    sampled[idx].append(img.cpu())
+                    preds[idx].append(pd.item())
+                    probs[idx].append(prb.cpu())
+            if all(len(sampled[i]) == samples for i in sampled):
+                break
+
+    fig = plt.figure(figsize=(18, 25))
+    fig.suptitle("Predictions", fontsize=24, y=0.98, fontweight='bold', color='#2e3440')
+    gs = plt.GridSpec(n_classes, samples + 2, width_ratios=[1]*samples + [0.5, 1.5], hspace=0.4, wspace=0.1)
+
+    for i in range(n_classes):
+        for j in range(samples):
+            ax = plt.subplot(gs[i, j])
+            img = sampled[i][j].permute(1, 2, 0).numpy()
+            ax.imshow((img - img.min()) / (img.max() - img.min()))
+            ax.axis('off')
+            ax.text(0.5, -0.1, str(j+1), transform=ax.transAxes, ha='center', va='top', fontsize=12, color='#2e3440')
+
+        text_ax = plt.subplot(gs[i, samples])
+        text_ax.axis('off')
+        text_ax.text(0.5, 0.5, class_names[i], ha='center', va='center', fontsize=14, rotation=90, color='black', fontweight='bold')
+
+        pred_ax = plt.subplot(gs[i, samples+1])
+        pred_ax.axis('off')
+        pred_ax.text(0.5, 0.95, "Model Predictions Across All Classes", ha='center', va='center', fontsize=12, fontweight='bold', color='#2e3440')
+
+        for j in range(samples):
+            p = preds[i][j]
+            conf = probs[i][j][p].item()
+            correct = (p == i)
+            col = '#88C0D0' if correct else '#BF616A'
+            h = 0.8 / samples
+            y = 0.8 - j * h
+            pred_ax.text(0.05, y - h/2, f"{j+1}:", ha='right', va='center', fontsize=10, color='#2e3440')
+            pred_ax.add_patch(patches.Rectangle((0.1, y - h + 0.05), 0.8, h - 0.1, facecolor=col, alpha=0.3, edgecolor=col, linewidth=2, transform=pred_ax.transAxes))
+            pred_ax.text(0.5, y - h/2, f"{class_names[p]}\nConf: {conf:.2f}", ha='center', va='center', fontsize=10, color='#2e3440')
+            pred_ax.text(0.92, y - h/2, "✓" if correct else "✗", ha='center', va='center', fontsize=14, color=col, fontweight='bold')
+
+    plt.tight_layout()
+    plt.savefig('class_predictions_grid.png', dpi=150, bbox_inches='tight')
+    plt.show()
+
