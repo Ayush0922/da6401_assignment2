@@ -162,3 +162,29 @@ def experiment(cfg=None):
             acc = validate_loop(model, val_loader)
             wandb.log({"accuracy": acc})
             epoch_counter += 1
+
+# Sweep and config
+SWEEP_CFG = {
+    'name': 'vision_hyper_sweep',
+    'method': 'bayes',
+    'metric': {'goal': 'maximize', 'name': 'accuracy'},
+    'parameters': {
+        'epochs': {'values': [5,10,15,25]},
+        'batch_size': {'values': [32, 64, 128]},
+        'learning_rate': {'values': [0.0001,0.00001,0.000001]},
+        'dense_size': {'values': [256]},
+        'filter_size': {'values': [[7, 5, 5, 3, 3], [11, 7, 5, 3, 3], [3, 3, 3, 3, 3]]},
+        'activation': {'values': ['LeakyReLU', 'ReLU', 'GELU', 'SiLU', 'Mish']},
+        'filter_organisation': {'values': ['same', 'alt']},
+        'no_of_filters': {'values': [64]},
+        'data_augmentaion': {'values': ['No', 'Yes']},
+        'batch_normalization': {'values': ['Yes', 'No']},
+        'dropout': {'values': [0.2, 0.3]},
+        'img_size': {'values': [224, 256]},
+        'optimizer': {'values': ['adam']}
+    }
+}
+
+DATA_PATH = "/kaggle/input/nature-922/inaturalist_12K/train"
+sweep_id = wandb.sweep(SWEEP_CFG, project="iNaturalist-CNN-2")
+wandb.agent(sweep_id, function=experiment)
