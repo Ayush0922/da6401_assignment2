@@ -112,3 +112,53 @@ class Net(nn.Module):
     def forward(self, x):
         return self.dense(self.conv(x))
 
+# Training pipeline
+def train_loop(model, loader, criterion, optimizer):
+    model.train()
+    batch_idx = 0
+    while batch_idx < len(loader):
+        for inputs, targets in [loader[batch_idx]]:
+            inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
+            optimizer.zero_grad()
+            preds = model(inputs)
+            loss = criterion(preds, targets)
+            loss.backward()
+            optimizer.step()
+        batch_idx += 1
+
+def validate_loop(model, loader):
+    model.eval()
+    correct, total = 0, 0
+    with torch.no_grad():
+        index = 0
+        while index < len(loader):
+            for inputs, labels in [loader[index]]:
+                inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+            index += 1
+    return correct / total
+
+# Main training function
+def experiment(cfg=None):
+    with wandb.init(config=cfg):
+        params = wandb.config
+        params = namedtuple("Params", params.keys())(*params.values())
+
+        train_loader, val_loader, classes = fetch_data(
+            DATA_PATH, params.batch_size, params.img_size, params.data_augmentaion == 'Yes')
+
+        setattr(params, 'num_classes', classes)
+
+        model = Net(params).to(DEVICE)
+        opt = optim.Adam(model.parameters(), lr=params.learning_rate)
+        loss_fn = nn.CrossEntropyLoss()
+
+        epoch_counter = 0
+        while epoch_counter < params.epochs:
+            train_loop(model, train_loader, loss_fn, opt)
+            acc = validate_loop(model, val_loader)
+            wandb.log({"accuracy": acc})
+            epoch_counter += 1
