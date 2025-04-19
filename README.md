@@ -49,61 +49,57 @@ pip install torch torchvision torchaudio scikit-learn matplotlib wandb
 - `torchvision`: Provides datasets, model architectures, and image transformations for computer vision.
 - `torchaudio`: (While not explicitly used in these scripts, it's good practice to install it if you plan to extend the project with audio data later).
 - `scikit-learn`: Useful for machine learning tasks like stratified train-test splitting.
-- `matplotlib`: For creating visualizations, such as the prediction grid in `A3.py`.
+- `matplotlib`: For creating visualizations, such as the prediction grid in `A4.py`.
 - `wandb`: Weights & Biases library for experiment tracking and hyperparameter optimization (used in `A2.py`).
 
 ## 🚀 Running the Code
 
-Before running the scripts, ensure that you have downloaded the iNaturalist 12K dataset and placed the `inaturalist_12K` folder in the same directory as the Python scripts, or update the `DATA_PATH` variables in the scripts to the correct location. The dataset should have `train` and `val` subdirectories containing the image data organized by class.
+Before running the scripts, ensure that you have downloaded the iNaturalist 12K dataset and placed the `inaturalist_12K` folder in the same directory as the Python scripts, or update the `DATA_PATH`, `train_path`, and `test_path` variables within the scripts to the correct locations of your dataset. The dataset should have `train` and `val` subdirectories containing the image data organized by class.
 
 ### ▶️ Running `A1.py`
 
-This script defines a basic CNN and trains it on a subset of the iNaturalist 12K dataset.
+This script defines a basic CNN. To train and evaluate it, you would need to add a training loop and evaluation steps. Here's a basic outline of how you might extend `A1.py`:
+
+1.  **Add a Training Loop:** Iterate over the training data loader, perform forward passes, calculate the loss using `loss_fn`, perform backpropagation, and update the model's weights using the `optimiser`.
+2.  **Implement Validation:** After each epoch (or at intervals), evaluate the model on the validation data loader to monitor performance and prevent overfitting.
+3.  **Evaluate on Test Set:** Once training is complete, evaluate the model on the `test_dl` to get the final performance metrics.
+
+You can refer to the training and evaluation logic in `A4.py` for a more detailed implementation. To run the extended `A1.py` (after adding the training and evaluation code):
 
 ```bash
 python A1.py
 ```
 
-This will:
-1. Prepare the data loaders for training, validation, and testing.
-2. Instantiate the `CustomCNN` model.
-3. Define the loss function and optimizer.
-4. Print the model architecture and the total number of parameters.
-
-**Note:** This script runs a basic setup without explicit training loops. You would need to add a training loop to see the model learn.
-
 ### ▶️ Running `A2.py`
 
-This script utilizes Weights & Biases for hyperparameter sweeping. You need to have a wandb account and be logged in.
+`A2.py` is designed for hyperparameter sweeping using Weights & Biases. Training and evaluation are handled within the `experiment` function, which is called by the wandb agent.
 
-1. **Install wandb:** If you haven't already, install it with `pip install wandb`.
-2. **Log in to wandb:** Run `wandb login` in your terminal and follow the instructions.
-
-Then, run the script:
+1.  **Set up wandb:** Ensure you have installed and logged into wandb (`pip install wandb` followed by `wandb login`).
+2.  **Run the sweep:** Execute the script:
 
 ```bash
 python A2.py
 ```
 
-This will initiate a hyperparameter sweep defined in the `SWEEP_CFG` dictionary. Wandb will run multiple experiments with different hyperparameter combinations and track the results.
-
-**Note:** Ensure that the `DATA_PATH` in `A2.py` correctly points to your iNaturalist 12K training data directory.
+Wandb will manage the training and evaluation process for different hyperparameter configurations defined in `SWEEP_CFG`. The best performing models based on the validation accuracy will be tracked by wandb.
 
 ### ▶️ Running `A4.py`
 
-This script provides a more complete training and evaluation pipeline, including visualization of predictions.
+`A4.py` includes a complete training and evaluation pipeline.
+
+1.  **Ensure correct data paths:** Verify that `train_path` and `test_path` in the `if __name__ == '__main__':` block point to your training and validation datasets, respectively.
+2.  **Run the script:**
 
 ```bash
 python A4.py
 ```
 
-This will:
-1. Load the iNaturalist 12K dataset and create data loaders.
-2. Define and train the `ConvNet` model based on the provided `best` configuration.
-3. Evaluate the trained model on the test set and print the accuracy.
-4. Generate a visualization (`class_predictions_grid.png`) showing sample images with their ground truth labels and model predictions.
-
-**Note:** Ensure that the `train_path` and `test_path` variables in the `if __name__ == '__main__':` block of `A4.py` point to the correct locations of your training and validation datasets, respectively.
+This script will:
+- Load the data.
+- Train the `ConvNet` model using the configuration in the `best` dictionary.
+- Evaluate the model on the validation set during training and save the best weights.
+- Evaluate the final trained model on the test set and print the test accuracy.
+- Generate a visualization of predictions on the test set.
 
 ## 💾 Dataset
 
@@ -133,4 +129,4 @@ Make sure to adjust the `DATA_PATH`, `train_path`, and `test_path` variables in 
 
 ## 🔭 Further Exploration
 
-You can modify the configurations in the scripts (e.g., network architecture, hyperparameters, data augmentation techniques) to experiment with different models and training strategies. The `A2.py` script provides a good starting point for exploring hyperparameter optimization using Weights & Biases. The `A3.py` script offers a more structured training and evaluation framework that you can extend.
+You can modify the configurations in the scripts (e.g., network architecture, hyperparameters, data augmentation techniques) to experiment with different models and training strategies. `A1.py` can be extended with custom training and evaluation loops. `A2.py` provides a framework for automated hyperparameter tuning. `A4.py` offers a more structured end-to-end training, evaluation, and visualization process that can be adapted and expanded upon.
