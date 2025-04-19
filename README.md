@@ -89,12 +89,12 @@ This will initiate a hyperparameter sweep defined in the `SWEEP_CFG` dictionary.
 
 **Note:** Ensure that the `DATA_PATH` in `A2.py` correctly points to your iNaturalist 12K training data directory.
 
-### ▶️ Running `A3.py`
+### ▶️ Running `A4.py`
 
 This script provides a more complete training and evaluation pipeline, including visualization of predictions.
 
 ```bash
-python A3.py
+python A4.py
 ```
 
 This will:
@@ -103,7 +103,7 @@ This will:
 3. Evaluate the trained model on the test set and print the accuracy.
 4. Generate a visualization (`class_predictions_grid.png`) showing sample images with their ground truth labels and model predictions.
 
-**Note:** Ensure that the `train_path` and `test_path` variables in the `if __name__ == '__main__':` block of `A3.py` point to the correct locations of your training and validation datasets, respectively.
+**Note:** Ensure that the `train_path` and `test_path` variables in the `if __name__ == '__main__':` block of `A4.py` point to the correct locations of your training and validation datasets, respectively.
 
 ## 💾 Dataset
 
@@ -134,4 +134,3 @@ Make sure to adjust the `DATA_PATH`, `train_path`, and `test_path` variables in 
 ## 🔭 Further Exploration
 
 You can modify the configurations in the scripts (e.g., network architecture, hyperparameters, data augmentation techniques) to experiment with different models and training strategies. The `A2.py` script provides a good starting point for exploring hyperparameter optimization using Weights & Biases. The `A3.py` script offers a more structured training and evaluation framework that you can extend.
-```
