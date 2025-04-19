@@ -1,4 +1,3 @@
-```markdown
 # iNaturalist Image Classification
 
 This repository contains Python scripts for training and evaluating Convolutional Neural Networks (CNNs) on the iNaturalist 12K dataset for image classification.
